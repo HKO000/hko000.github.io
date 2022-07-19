@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart.js Bar Chart</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+</head>
+
+<body>
+
+    <div>
+        <canvas id="myChart"></canvas>
+        <canvas id="myChart1"></canvas>
+    </div>
+
+    <script>
+        var JSONOBJECT;
+
+
+        function CSVToArray(strData, strDelimiter) {
+
+            strDelimiter = (strDelimiter || ",");
+
+            var objPattern = new RegExp((
+
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"), "gi");
+
+            var arrData = [
+                []
+            ];
+
+            var arrMatches = null;
+
+            while (arrMatches = objPattern.exec(strData)) {
+
+                var strMatchedDelimiter = arrMatches[1];
+
+                if (strMatchedDelimiter.length && (strMatchedDelimiter != strDelimiter)) {
+
+                    arrData.push([]);
+                }
+
+                if (arrMatches[2]) {
+
+                    var strMatchedValue = arrMatches[2].replace(
+                        new RegExp("\"\"", "g"), "\"");
+                } else {
+
+                    var strMatchedValue = arrMatches[3];
+                }
+
+                arrData[arrData.length - 1].push(strMatchedValue);
+            }
+
+            return (arrData);
+        }
+
+        function CSV2JSON(csv) {
+            var array = CSVToArray(csv);
+            var objArray = [];
+            for (var i = 1; i < array.length; i++) {
+                objArray[i - 1] = {};
+                for (var k = 0; k < array[0].length && k < array[i].length; k++) {
+                    var key = array[0][k];
+                    objArray[i - 1][key] = array[i][k]
+                }
+            }
+
+
+            return objArray;
+        }
+
+        function Cdata(a) {
+            var myData = {};
+            var DATA = [];
+            var datapart;
+            for (i = 0; i < a.length - 1; i++) {
+                if (myData[a[i].DEPT_ID] == undefined) {
+                    myData[a[i].DEPT_ID] = [];
+                    myData[a[i].DEPT_ID].push(parseInt(a[i].TOTALVISIT));
+                } else {
+                    myData[a[i].DEPT_ID].push(parseInt(a[i].TOTALVISIT));
+                }
+            }
+            return myData;
+        }
+
+        function Clabel(b) {
+            var LABEL = [];
+            var datapart;
+            for (i = 0; i < b.length - 1; i++) {
+                LABEL[i] = b[i].STATISTIC_YEAR + " " + b[i].STATISTIC_MONTH;
+            }
+            return LABEL;
+        }
+
+        function dataset() {
+            var DATASET = [];
+            var dataset;
+            for (i = 0; i < l.length - 1; i++) {
+                DATASET[i] = DATA[0];
+                
+            }
+
+        }
+
+        function renderBarChart() {
+            var ctx = document.getElementById('myChart1').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: LABEL,
+                    datasets: [{
+                        data: DATA.AFCD,
+                        label: "AFCD",
+                        borderColor: "rgb(62,149,205)",
+                        backgroundColor: "rgb(62,149,205,0.1)",
+                        borderWidth: 2
+                    }, {
+                        data: DATA.ARCHSD,
+                        label: "ARCHSD",
+                        borderColor: "rgb(60,186,159)",
+                        backgroundColor: "rgb(60,186,159,0.1)",
+                        borderWidth: 2
+                    }, {
+                        data: DATA.BD,
+                        label: "BD",
+                        borderColor: "rgb(255,165,0)",
+                        backgroundColor: "rgb(255,165,0,0.1)",
+                        borderWidth: 2
+                    }]
+                },
+            });
+        }
+
+        $.ajax("db_login_breakdown.csv", {
+            success: function(data) {
+                var jsonobject = CSV2JSON(data);
+                DATA = Cdata(jsonobject);
+                LABEL = [...new Set(Clabel(jsonobject))];
+                console.log(jsonobject);
+                console.log(LABEL);
+                renderBarChart();
+            },
+            error: function() {
+                alert("error")
+            }
+        });
+
+        var numberWithCommas = function(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        };
+
+        var DATA = [];
+        var DATASET = [];
+        var LABEL = [];
+    </script>
+
+
+
+</body>
+
+</html>
